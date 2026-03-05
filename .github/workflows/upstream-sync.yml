@@ -1,0 +1,35 @@
+name: Sync Upstream
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Mirror RightNow-AI refs
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync upstream branches and tags
+        env:
+          UPSTREAM_URL: https://github.com/RightNow-AI/openfang.git
+          PROTECTED_BRANCH_PREFIX: aether/
+          PROTECTED_TAG_PREFIX: aether-
+        run: ./scripts/sync-upstream.sh
